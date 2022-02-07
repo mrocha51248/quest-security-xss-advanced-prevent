@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self';"> -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -81,6 +82,7 @@
     </div>
 
     <script>
+        DOMPurify.setConfig({ALLOWED_TAGS: []});
 
         // General URL settings (boring stuff)
 
@@ -96,7 +98,7 @@
             userName = userParam;
         }
 
-        document.getElementById("welcome-text").innerHTML = "<h1>How do you do, " + userName + "?</h1>";
+        document.getElementById("welcome-text").innerHTML = "<h1>How do you do, " + DOMPurify.sanitize(userName) + "?</h1>";
 
         //  XSS vulnerability #2
 
@@ -106,7 +108,7 @@
         input.addEventListener("input", updateValue);
 
         function updateValue(e) {
-            log.innerHTML = e.target.value;
+            log.textContent = e.target.value;
         }
 
         //  XSS vulnerability #3
@@ -118,13 +120,16 @@
         showButton.addEventListener("click", showHTML);
 
         function showHTML() {
-            htmlOutput.innerHTML = htmlInput.value;
+            htmlOutput.textContent = htmlInput.value;
         }
 
         //  XSS vulnerability #4
 
-        const redir = params.get("goto");
+        let redir = params.get("goto");
         if (redir !== null && redir !== "null") {
+            if (!redir.startsWith('http://') && !redir.startsWith('https://')) {
+                redir = 'https://' + redir;
+            }
             document.location = redir;
         }
 
